@@ -7,15 +7,12 @@ import 'mobile-drag-drop/default.css';
 import { scrollBehaviourDragImageTranslateOverride } from 'mobile-drag-drop/scroll-behaviour';
 
 
+
 polyfill({
-  dragImageTranslateOverride: scrollBehaviourDragImageTranslateOverride
+  dragImageTranslateOverride: scrollBehaviourDragImageTranslateOverride;
+  holdToDrag: 200
 });
 
-
-// Apply polyfill
-polyfill({
-   // Optional: long-press delay before drag starts
-});
 
 
 export default function Board(){
@@ -44,7 +41,7 @@ export default function Board(){
                 correctOrder={correctOrder}
                 setSolved={setSolved}/>
 
-                {solved && <h2>🎉 Puzzle Solved!</h2>}
+                {solved && <h2 className="solved">🎉 Puzzle Solved!</h2>}
 
                 <h2>Moves: {moveCount}</h2>
 
