@@ -8,7 +8,10 @@ import { scrollBehaviourDragImageTranslateOverride } from 'mobile-drag-drop/scro
 
 
 
-
+polyfill({
+  dragImageTranslateOverride: scrollBehaviourDragImageTranslateOverride;
+  holdToDrag: 200
+});
 
 
 
