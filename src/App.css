@@ -1,0 +1,9 @@
+.bg{
+    background-color: rgba(0, 0, 0, 0.53);
+    border-radius: 14px;
+}
+
+.board{
+    padding: 5vw;
+    border-radius: 14px;
+}
