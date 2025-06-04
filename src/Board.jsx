@@ -68,7 +68,7 @@ function BoardPiecesDrag() {
         [1, 2, 3].map((col) => (
           <div className="box" draggable="true" key={`r${row}c${col}`}>
             <img
-              src={`puzzleGame/puzzles/${puzzleId}/row-${row}-column-${col}.jpg`}
+              src={`https://raw.githubusercontent.com/dhritim4n/puzzleGame/refs/heads/main/puzzles/${puzzleId}/row-${row}-column-${col}.jpg`}
               alt={`Piece ${row}-${col}`}
             />
           </div>
