@@ -2,13 +2,7 @@ import "./Board.css";
 import { useEffect } from "react";
 import { useState } from "react";
 import { useMemo } from "react";
-import { polyfill } from 'mobile-drag-drop';
 import 'mobile-drag-drop/default.css';
-import { scrollBehaviourDragImageTranslateOverride } from 'mobile-drag-drop/scroll-behaviour';
-
-
-
-
 
 
 export default function Board(){
@@ -74,7 +68,7 @@ function BoardPiecesDrag() {
         [1, 2, 3].map((col) => (
           <div className="box" draggable="true" key={`r${row}c${col}`}>
             <img
-              src={`../puzzles/${puzzleId}/row-${row}-column-${col}.jpg`}
+              src={`puzzleGame/puzzles/${puzzleId}/row-${row}-column-${col}.jpg`}
               alt={`Piece ${row}-${col}`}
             />
           </div>
