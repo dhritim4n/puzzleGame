@@ -63,7 +63,8 @@ function BoardPiecesDrag({ grid }) {
       {shuffledBoxes.map(({ row, col }, index) => (
         <div className="box" draggable="true" key={`drag-${index}`} id={`drag-${index}`}>
           <img
-            src={`puzzles/${grid}x${grid}/${puzzleId}/row-${row}-column-${col}.jpg`}
+            src={`https://raw.githubusercontent.com/dhritim4n/puzzleGame/refs/heads/main/puzzles/${grid}x${grid}/${puzzleId}/row-${row}-column-${col}.jpg`}
+            //src={`puzzles/${grid}x${grid}/${puzzleId}/row-${row}-column-${col}.jpg`}
             alt={`Piece ${row}-${col}`}
           />
         </div>
@@ -136,6 +137,9 @@ function initializeDragAndDrop(setMoveCount, correctOrder, setSolved) {
       const dragImg = draggedBox.querySelector("img");
       const dropImg = box.querySelector("img");
 
+      // Prevent swapping if both boxes have images
+      if (dragImg && dropImg) return;
+
       if (dragImg) {
         if (dropImg) {
           draggedBox.appendChild(dropImg);
@@ -165,11 +169,19 @@ function initializeDragAndDrop(setMoveCount, correctOrder, setSolved) {
       const touch = e.changedTouches[0];
       const target = document.elementFromPoint(touch.clientX, touch.clientY);
       const dropBox = target?.closest(".box");
-      const dragImg = draggedBox?.querySelector("img");
-      const dropImg = dropBox?.querySelector("img");
 
-      if (draggedBox && dropBox && draggedBox !== dropBox && dragImg) {
-        if (dropImg) draggedBox.appendChild(dropImg);
+      if (!draggedBox || !dropBox || draggedBox === dropBox) return;
+
+      const dragImg = draggedBox.querySelector("img");
+      const dropImg = dropBox.querySelector("img");
+
+      // Prevent swapping if both boxes have images
+      if (dragImg && dropImg) return;
+
+      if (dragImg) {
+        if (dropImg) {
+          draggedBox.appendChild(dropImg);
+        }
         dropBox.appendChild(dragImg);
         dragImg.classList.remove("dragging");
         setMoveCount((m) => m + 1);
