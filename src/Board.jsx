@@ -92,7 +92,7 @@ function BoardPiecesDrop({ grid, moveCount, setMoveCount, correctOrder, setSolve
   );
 }
 
-// Utility Functions
+
 function generateCorrectOrder(grid) {
   const order = [];
   for (let row = 1; row <= grid; row++) {

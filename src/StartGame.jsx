@@ -48,16 +48,11 @@ export default function StartGame({ grid, setGrid, setGameStarted }) {
     >
       <div className="modal-dialog" role="document">
         <div className="modal-content">
-          <div className="modal-header text-success text-center">
+          <div className="modal-header text-success justify-content-center">
             <h5 className="modal-title" id="exampleModalLabel">
               Welcome
             </h5>
-            <button
-              type="button"
-              className="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
+
           </div>
 
           <div className="modal-body text-center">
@@ -89,7 +84,7 @@ function DropDown({ grid, setGrid }) {
   return (
     <div className="dropdown">
       <button
-        className="btn btn-primary dropdown-toggle m-3"
+        className="btn btn-success dropdown-toggle m-3"
         type="button"
         id="gridDropdown"
         data-bs-toggle="dropdown"
