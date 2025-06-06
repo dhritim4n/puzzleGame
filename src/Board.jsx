@@ -1,16 +1,23 @@
 import "./Board.css";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import 'mobile-drag-drop/default.css';
 
-export default function Board({ grid }) {
+export default function Board({ grid = 3, imgUrl }) {
   const [moveCount, setMoveCount] = useState(0);
-  const correctOrder = generateCorrectOrder(grid);
   const [solved, setSolved] = useState(false);
+  const [correctImages, setCorrectImages] = useState([]);
+  const [shuffledImages, setShuffledImages] = useState([]);
+
+  useEffect(() => {
+    splitImageToPieces(imgUrl, grid, grid).then((pieces) => {
+      setCorrectImages(pieces);
+      setShuffledImages(shuffle([...pieces]));
+    });
+  }, [imgUrl, grid]);
 
   return (
     <div>
       <div className="bg"></div>
-
       <div className="boardTitle">
         <h2>IMAGE PUZZLE GAME</h2>
       </div>
@@ -18,17 +25,15 @@ export default function Board({ grid }) {
       <div className="Board">
         <BoardPiecesDrop
           grid={grid}
-          moveCount={moveCount}
-          setMoveCount={setMoveCount}
-          correctOrder={correctOrder}
+          correctOrder={correctImages}
           setSolved={setSolved}
+          setMoveCount={setMoveCount}
         />
 
         {solved && <h2 className="solved">🎉 Puzzle Solved!</h2>}
-
         <h2>Moves: {moveCount}</h2>
 
-        <BoardPiecesDrag grid={grid} imgArray={correctOrder} />
+        <BoardPiecesDrag imgArray={shuffledImages} />
 
         <a href="index.html">
           <button className="resetButton">Reset</button>
@@ -38,69 +43,69 @@ export default function Board({ grid }) {
   );
 }
 
-function BoardPiecesDrag({ grid }) {
-  const puzzleId = useMemo(() => Math.floor(Math.random() * 5) + 1, []);
-  
-  const shuffledBoxes = useMemo(() => {
-    const total = grid * grid;
-    const boxes = Array.from({ length: total }, (_, index) => {
-      const row = Math.floor(index / grid) + 1;
-      const col = (index % grid) + 1;
-      return { row, col };
+function BoardPiecesDrag({ imgArray }) {
+  const [allLoaded, setAllLoaded] = useState(false);
+  const [loadedCount, setLoadedCount] = useState(0);
+
+  useEffect(() => {
+    // Reset loading state when imgArray changes
+    setAllLoaded(false);
+    setLoadedCount(0);
+  }, [imgArray]);
+
+  const handleImageLoad = () => {
+    setLoadedCount((count) => {
+      const newCount = count + 1;
+      if (newCount === imgArray.length) setAllLoaded(true);
+      return newCount;
     });
-
-    // Shuffle the boxes
-    for (let i = boxes.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [boxes[i], boxes[j]] = [boxes[j], boxes[i]];
-    }
-
-    return boxes;
-  }, [grid]);
+  };
 
   return (
-    <div className="BoardPiecesDrag">
-      {shuffledBoxes.map(({ row, col }, index) => (
+    <div className="BoardPiecesDrag" style={{ position: "relative" }}>
+      {!allLoaded && (
+        <div className="loading-overlay">
+          Loading Images...
+        </div>
+      )}
+      {imgArray.map((piece, index) => (
         <div className="box" draggable="true" key={`drag-${index}`} id={`drag-${index}`}>
-          <img
-            src={`https://raw.githubusercontent.com/dhritim4n/puzzleGame/refs/heads/main/puzzles/${grid}x${grid}/${puzzleId}/row-${row}-column-${col}.jpg`}
-            //src={`puzzles/${grid}x${grid}/${puzzleId}/row-${row}-column-${col}.jpg`}
-            alt={`Piece ${row}-${col}`}
-          />
+          <img src={piece.src} data-id={piece.id} alt={`piece-${index}`} onLoad={handleImageLoad} />
         </div>
       ))}
     </div>
   );
 }
 
-function BoardPiecesDrop({ grid, moveCount, setMoveCount, correctOrder, setSolved }) {
-  const boxes = createBoxesArray(grid);
+
+
+function BoardPiecesDrop({ grid, correctOrder, setMoveCount, setSolved }) {
+  const boxes = Array.from({ length: grid * grid });
 
   useEffect(() => {
     initializeDragAndDrop(setMoveCount, correctOrder, setSolved);
-  }, []);
+  }, [correctOrder]);
 
   return (
     <div
       className="BoardPiecesDrop"
       style={{ display: "grid", gridTemplateColumns: `repeat(${grid}, 1fr)` }}
     >
-      {boxes.map(({ index }) => (
+      {boxes.map((_, index) => (
         <div className="box" draggable="true" key={`box-${index}`} id={`box-${index}`}></div>
       ))}
     </div>
   );
 }
 
-
-function generateCorrectOrder(grid) {
-  const order = [];
-  for (let row = 1; row <= grid; row++) {
-    for (let col = 1; col <= grid; col++) {
-      order.push(`row-${row}-column-${col}`);
-    }
+// Utility to shuffle an array
+function shuffle(array) {
+  let currentIndex = array.length;
+  while (currentIndex--) {
+    const randomIndex = Math.floor(Math.random() * (currentIndex + 1));
+    [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
   }
-  return order;
+  return array;
 }
 
 function initializeDragAndDrop(setMoveCount, correctOrder, setSolved) {
@@ -109,27 +114,24 @@ function initializeDragAndDrop(setMoveCount, correctOrder, setSolved) {
   let draggedBox = null;
 
   dragBoxes.forEach((box) => {
-    // Drag Start
+    // Desktop drag start
     box.addEventListener("dragstart", () => {
       const img = box.querySelector("img");
       if (img) {
-        img.classList.add("dragging");
         draggedBox = box;
+        img.classList.add("dragging");
       }
     });
 
-    // Drag End
     box.addEventListener("dragend", () => {
       const dragging = document.querySelector("img.dragging");
       if (dragging) dragging.classList.remove("dragging");
     });
 
-    // Drag Over
     box.addEventListener("dragover", (e) => {
-      e.preventDefault(); // Allow drop for swapping
+      e.preventDefault(); // Required to allow drop
     });
 
-    // Drop
     box.addEventListener("drop", (e) => {
       e.preventDefault();
       if (!draggedBox || draggedBox === box) return;
@@ -137,13 +139,11 @@ function initializeDragAndDrop(setMoveCount, correctOrder, setSolved) {
       const dragImg = draggedBox.querySelector("img");
       const dropImg = box.querySelector("img");
 
-      // Prevent swapping if both boxes have images
+      // Prevent swapping if both have images
       if (dragImg && dropImg) return;
 
       if (dragImg) {
-        if (dropImg) {
-          draggedBox.appendChild(dropImg);
-        }
+        if (dropImg) draggedBox.appendChild(dropImg);
         box.appendChild(dragImg);
         dragImg.classList.remove("dragging");
         setMoveCount((m) => m + 1);
@@ -151,20 +151,19 @@ function initializeDragAndDrop(setMoveCount, correctOrder, setSolved) {
       }
     });
 
-    // Touch Start
+    // --- Touch support ---
     box.addEventListener(
       "touchstart",
-      () => {
+      (e) => {
         const img = box.querySelector("img");
         if (img) {
-          img.classList.add("dragging");
           draggedBox = box;
+          img.classList.add("dragging");
         }
       },
       { passive: true }
     );
 
-    // Touch End
     box.addEventListener("touchend", (e) => {
       const touch = e.changedTouches[0];
       const target = document.elementFromPoint(touch.clientX, touch.clientY);
@@ -175,13 +174,11 @@ function initializeDragAndDrop(setMoveCount, correctOrder, setSolved) {
       const dragImg = draggedBox.querySelector("img");
       const dropImg = dropBox.querySelector("img");
 
-      // Prevent swapping if both boxes have images
+      // Prevent swapping if both have images
       if (dragImg && dropImg) return;
 
       if (dragImg) {
-        if (dropImg) {
-          draggedBox.appendChild(dropImg);
-        }
+        if (dropImg) draggedBox.appendChild(dropImg);
         dropBox.appendChild(dragImg);
         dragImg.classList.remove("dragging");
         setMoveCount((m) => m + 1);
@@ -191,30 +188,71 @@ function initializeDragAndDrop(setMoveCount, correctOrder, setSolved) {
   });
 }
 
+
 function checkIfSolved(setSolved, correctOrder) {
   const dropBoxes = document.querySelectorAll(".BoardPiecesDrop .box");
   const currentOrder = Array.from(dropBoxes).map((box) => {
     const img = box.querySelector("img");
-    if (!img) return "";
-    const match = img.src.match(/row-\d-column-\d/);
-    return match ? match[0] : "";
+    return img ? parseInt(img.dataset.id) : null;
   });
 
-  const isSolved = currentOrder.every((val, i) => val === correctOrder[i]);
+  const correctIds = correctOrder.map((p) => p.id);
+
+  const isSolved =
+    currentOrder.length === correctIds.length &&
+    correctIds.every((id, i) => id === currentOrder[i]);
+
   if (isSolved) setSolved(true);
 }
 
-// ✅ Separated and placed at the end
-function createBoxesArray(grid) {
-  const arr = [];
-  for (let row = 1; row <= grid; row++) {
-    for (let col = 1; col <= grid; col++) {
-      arr.push({
-        row,
-        col,
-        index: (row - 1) * grid + (col - 1),
-      });
-    }
-  }
-  return arr;
+function splitImageToPieces(imageUrl, rows, cols) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = imageUrl;
+
+    img.onload = () => {
+      const width = img.width;
+      const height = img.height;
+      const pieceWidth = width / cols;
+      const pieceHeight = height / rows;
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, width, height);
+
+      const pieces = [];
+      let id = 0;
+
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          const pieceCanvas = document.createElement("canvas");
+          pieceCanvas.width = pieceWidth;
+          pieceCanvas.height = pieceHeight;
+          const pctx = pieceCanvas.getContext("2d");
+
+          pctx.drawImage(
+            canvas,
+            x * pieceWidth,
+            y * pieceHeight,
+            pieceWidth,
+            pieceHeight,
+            0,
+            0,
+            pieceWidth,
+            pieceHeight
+          );
+
+          const dataUrl = pieceCanvas.toDataURL();
+          pieces.push({ id: id++, src: dataUrl });
+        }
+      }
+
+      resolve(pieces);
+    };
+
+    img.onerror = reject;
+  });
 }

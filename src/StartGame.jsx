@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-export default function StartGame({ grid, setGrid, setGameStarted }) {
+export default function StartGame({ grid, setGrid, setGameStarted,setImgUrl }) {
   const modalRef = useRef(null);
   const modalInstanceRef = useRef(null);
 
@@ -8,8 +8,8 @@ export default function StartGame({ grid, setGrid, setGameStarted }) {
     const modalEl = modalRef.current;
 
     modalInstanceRef.current = new window.bootstrap.Modal(modalEl, {
-      backdrop: true,
-      keyboard: true,
+      backdrop: false,
+      keyboard: false,
     });
 
     modalInstanceRef.current.show();
@@ -38,40 +38,43 @@ export default function StartGame({ grid, setGrid, setGameStarted }) {
   };
 
   return (
-    <div
-      className="modal fade"
-      id="exampleModal"
-      tabIndex="-1"
-      aria-labelledby="exampleModalLabel"
-      aria-hidden="true"
-      ref={modalRef}
-    >
-      <div className="modal-dialog" role="document">
-        <div className="modal-content">
-          <div className="modal-header text-success justify-content-center">
-            <h5 className="modal-title" id="exampleModalLabel">
-              Welcome
-            </h5>
+<div
+  className="modal fade"
+  id="exampleModal"
+  tabIndex="-1"
+  aria-labelledby="exampleModalLabel"
+  aria-hidden="true"
+  ref={modalRef}
+>
+  <div className="modal-dialog" role="document">
+    <div className="modal-content">
+      <div className="modal-header text-success justify-content-center">
+        <h5 className="modal-title" id="exampleModalLabel">
+          Welcome !!
+        </h5>
+      </div>
 
-          </div>
+      <div className="modal-body text-center">
+        <DropDown grid={grid} setGrid={setGrid} />
 
-          <div className="modal-body text-center">
-            <DropDown grid={grid} setGrid={setGrid} />
-            Click start to begin the game!
-          </div>
+        <ImageUpload setImgUrl={setImgUrl} />
 
-          <div className="modal-footer">
-            <button
-              type="button"
-              className="btn btn-success"
-              onClick={handleStart}
-            >
-              Start
-            </button>
-          </div>
-        </div>
+        Click start to begin the game!
+      </div>
+
+      <div className="modal-footer">
+        <button
+          type="button"
+          className="btn btn-success"
+          onClick={handleStart}
+        >
+          Start
+        </button>
       </div>
     </div>
+  </div>
+</div>
+
   );
 }
 
@@ -107,3 +110,34 @@ function DropDown({ grid, setGrid }) {
     </div>
   );
 }
+
+function ImageUpload({ setImgUrl }) {
+  return (
+    <div className="my-3">
+      <label htmlFor="uploadImg" className="form-label">
+        Upload Your Image:
+        <p>
+        To Use Random Image Leave Blank
+        </p> 
+        
+      </label>
+      <input
+        type="file"
+        accept="image/*"
+        className="form-control"
+        id="uploadImg"
+        onChange={(e) => {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              setImgUrl(reader.result); // Calls parent state setter
+            };
+            reader.readAsDataURL(file);
+          }
+        }}
+      />
+    </div>
+  );
+}
+

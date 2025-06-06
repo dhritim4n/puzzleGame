@@ -6,6 +6,8 @@ import './App.css';
 function App() {
   const [grid, setGrid] = useState(3);
   const [gameStarted, setGameStarted] = useState(false);
+  const [imgUrl, setImgUrl] = useState("https://picsum.photos/320/320?random=1"); // defaultImageUrl = some default image string or URL
+
 
   return (
     <div className="bg">
@@ -14,6 +16,8 @@ function App() {
           grid={grid}
           setGrid={setGrid}
           setGameStarted={setGameStarted}
+          imgUrl={imgUrl}
+          setImgUrl={setImgUrl}
         />
       )}
 
@@ -21,6 +25,7 @@ function App() {
       {gameStarted && (
         <Board
           grid={grid}
+          imgUrl={imgUrl}
           className="board"
         />
       )}
